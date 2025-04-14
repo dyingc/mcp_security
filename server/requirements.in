@@ -1,5 +1,9 @@
-mcp>=0.1.0
-langgraph>=0.1.0
-fastapi>=0.95.2
-uvicorn>=0.21.1
-python-dotenv>=1.0.0
+langchain-community
+langchain-core
+langchain-deepseek
+langchain-mcp-adapters
+langgraph
+langsmith
+mcp[cli]
+pydantic
+python-dotenv

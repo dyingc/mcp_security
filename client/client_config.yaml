@@ -1,0 +1,4 @@
+# The port on which the client will connect to the server
+port: 5050
+# The host address of the server
+host: localhost

@@ -65,7 +65,8 @@ def output_responses(messages: List[AnyMessage]):
         elif isinstance(msg, ToolMessage):
             print(f"\nTool execution result: {msg.content}")
         else:
-            print(msg.content)
+            print("\n" + msg.content)
+    print("\n")
 
 def output_tools(tools: List[StructuredTool]):
     """
@@ -77,10 +78,12 @@ def output_tools(tools: List[StructuredTool]):
     for i, tool in enumerate(tools):
         tool_name = tool.name
         tool_desc = tool.description
+        tool_desc = [f"\t\t{line}" if line else "" for line in f"{tool_desc}".split('\n')]
+        tool_desc = "\n".join(tool_desc)
         tool_args = tool.args_schema
-        print(f"Tool {i:02d}")
+        print(f"Tool {i+1:d}:")
         print(f"\tName: {tool_name}")
-        print(f"\tDescription:\n'''\n{tool_desc}\n'''")
+        print(f"\tDescription:\n{tool_desc}")
         print(f"\tArgs:")
         properties = tool_args.get("properties", {})
         required = tool_args.get("required", [])

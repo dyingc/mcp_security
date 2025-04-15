@@ -23,7 +23,12 @@ class DemoMCPServer:
         self._register_tools()
 
     def get_config(self, config_file:str="server/server_config.yaml"):
-        """Load configuration from a YAML file"""
+        """
+        Load configuration from a YAML file
+
+        Args:
+        config_file (str): Path to the configuration file
+        """
         with open(config_file, 'r') as file:
             config = yaml.safe_load(file)
         return config
@@ -31,12 +36,23 @@ class DemoMCPServer:
     def _register_tools(self):        
         @self.mcp.tool()
         async def execute_command(command: str) -> str:
-            """Execute shell command on server and return output"""
+            """
+            Execute shell command on server and return output
+
+            Args:
+            command (str): Command to execute
+            """
             return self.execute_command(command)
 
         @self.mcp.tool()
         async def add_numbers(a: float, b: float) -> float:
-            """Add two numbers together"""
+            """
+            Add two numbers together
+
+            Args:
+            a (float): First number
+            b (float): Second number
+            """
             # Note, this is a class method, no "self" so that the exposed function will not expose the unnecessary "self" argument
             return a + b
 

@@ -1,2 +1,4 @@
 # The port on which the server will listen for incoming connections
 port: 5050
+# Protocol to use for the server
+mcp_protocol: sse

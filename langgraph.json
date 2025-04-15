@@ -1,0 +1,10 @@
+{
+  "graphs": {
+    "reverse_engineering_researcher": "./client/mcp_client.py:mcp_agent"
+  },
+  "env": ".env",
+  "python_version": "3.13",
+  "dependencies": [
+    "."
+  ]
+}

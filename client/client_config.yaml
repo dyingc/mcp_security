@@ -1,4 +1,13 @@
-# The port on which the client will connect to the server
-port: 5050
-# The host address of the server
-host: localhost
+mcp_server:
+  # The port on which the client will connect to the server
+  server_port: 5050
+  # The host address of the server
+  server: localhost
+  # The protocol to use for the MCP server
+  mcp_protocol: sse
+
+agent_config:
+  # Model used by the client
+  model_name: "deepseek-chat"
+  temperature: 0.0
+  frequency_penalty: 0.1

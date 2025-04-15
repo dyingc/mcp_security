@@ -3,6 +3,7 @@ langchain-core
 langchain-deepseek
 langchain-mcp-adapters
 langgraph
+langgraph-cli[inmem]
 langsmith
 mcp[cli]
 pydantic

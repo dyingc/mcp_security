@@ -1,81 +1,73 @@
-from langchain_mcp_adapters.client import MultiServerMCPClient
-from langgraph.prebuilt import create_react_agent
-import yaml
+import asyncio
 import os
 import sys
+import yaml
 from pathlib import Path
 from dotenv import load_dotenv
-from langchain_deepseek import ChatDeepSeek
-import asyncio
 
+from langchain_deepseek import ChatDeepSeek
+from langgraph.prebuilt import create_react_agent
+from langchain_mcp_adapters.client import MultiServerMCPClient
+
+# Ensure project root is in path
 project_root = Path(__file__).parent.parent
 if str(project_root) not in sys.path:
     sys.path.append(str(project_root))
-    
+
+
 class DemoMCPClient:
-    def __init__(self, llm, agent, mcp_client):
+    def __init__(self, llm, agent):
         self.llm = llm
         self.agent = agent
-        self.mcp_client = mcp_client
 
-    @classmethod
-    async def create(cls):
-        # Load environment variables
-        load_dotenv()
-
-        # Create an instance to access non-async methods
-        temp = cls.__new__(cls)
-        llm = temp.get_llm("MCP_Client")
-        mcp_client = await temp._get_mcp_client("my_demo_mcp_client")
-        agent = create_react_agent(llm, mcp_client.get_tools())
-
-        return cls(llm=llm, agent=agent, mcp_client=mcp_client)
-
-    def get_config(self, config_file: str = "client/client_config.yaml"):
-        """Load configuration from a YAML file"""
+    @staticmethod
+    def get_config(config_file: str = "client/client_config.yaml"):
         with open(config_file, "r") as file:
-            config = yaml.safe_load(file)
-        return config
+            return yaml.safe_load(file)
 
-    def get_llm(self, llm_name: str):
-        config = self.get_config()
-        model_name = config.get("agent_config").get("model_name")
-        temperature = config.get("agent_config").get("temperature", 0.0)
-        api_key = os.getenv("DEEPSEEK_API_KEY")  # fixed typo: os.gentenv -> os.getenv
+    @staticmethod
+    def get_llm(config: dict, llm_name: str):
+        model_name = config["agent_config"]["model_name"]
+        temperature = config["agent_config"].get("temperature", 0.0)
+        api_key = os.getenv("DEEPSEEK_API_KEY")
         llm = ChatDeepSeek(model_name=model_name, api_key=api_key, temperature=temperature)
         llm.name = llm_name
         return llm
 
-    async def get_agent(self):
-        if not self.agent:
-            raise ValueError("Agent is not initialized. Call create() first.")
-        return self.agent
-
-    async def _get_mcp_client(self, name: str) -> MultiServerMCPClient:
-        config = self.get_config()
-        server = config.get("mcp_server").get("server", "localhost")
-        server_port = config.get("mcp_server").get("server_port", 5050)
-        mcp_protocol = config.get("mcp_server").get("mcp_protocol", "sse")
+    @staticmethod
+    def get_mcp_client_config(config: dict):
+        server = config["mcp_server"].get("server", "localhost")
+        server_port = config["mcp_server"].get("server_port", 5050)
+        mcp_protocol = config["mcp_server"].get("mcp_protocol", "sse")
         server_url = f"http://{server}:{server_port}/{mcp_protocol}"
-        client_config_dict = {
+        return {
             "my_demo_mcp_client": {
                 "url": server_url,
                 "transport": mcp_protocol,
             }
         }
-        self._client_instance = MultiServerMCPClient(client_config_dict)
-        # Explicitly initialize connection (this part is necessary)
-        await self._client_instance.__aenter__()
-        print(self._client_instance.get_tools())
-        return self._client_instance
 
     async def run(self, input_text: str):
-        result = await self.agent.ainvoke(input={"messages": [input_text]})
-        print(result)
+        response = await self.agent.ainvoke({"messages": [input_text]})
+        return response
+
 
 async def main():
-    client = await DemoMCPClient.create()
-    await client.run("What is 2 + 2?")
+    load_dotenv()
+    config = DemoMCPClient.get_config()
+    mcp_config_dict = DemoMCPClient.get_mcp_client_config(config)
+
+    # Clean resource management with async context
+    async with MultiServerMCPClient(mcp_config_dict) as mcp_client:
+        print("[MCP Client Tools]:\n" + "\n".join([f"Tool {i:02d}:\n" + str(tool) for i, tool in enumerate(mcp_client.get_tools())]))
+
+        llm = DemoMCPClient.get_llm(config, llm_name="MCP_Client")
+        agent = create_react_agent(llm, mcp_client.get_tools())
+
+        # You now have `agent` right here and can use it directly
+        client = DemoMCPClient(llm, agent)
+        result_chain = await client.run("Can you calculate the sum of FOUR and 8.5 and tell me the answer?")
+        print("\n[Result Chain]:\n" + "\n".join([f"Message {i:02d}:\n{str(message)}" for i, message in enumerate(result_chain.get('messages', []))]))
 
 if __name__ == "__main__":
     asyncio.run(main())

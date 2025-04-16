@@ -22,14 +22,9 @@ from client.utils import (
 )
 
 class DemoMCPClient:
-    # def __init__(self, llm, agent):
-    #     self.llm = llm
-    #     self.agent = agent
-
     def __init__(self, llm_name:str, config_file:str):
         self.mcp_config = get_mcp_client_config(config_file)
         self.llm = get_llm(llm_name, config_file)
-
 
     async def run(self, query: str)->List[AnyMessage]:
         async with MultiServerMCPClient(self.mcp_config) as mcp_client:

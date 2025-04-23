@@ -39,7 +39,7 @@ async def main():
     config_file = "client/client_config.yaml"
     llm_name = "my_demo_mcp_client"
     demo_client = DemoMCPClient(llm_name, config_file)
-    query = "What is the result of 2 + 2?"
+    query = "Send a notification to Tom (ask.tom@example.com) that I will be there to sign the contract with him."
     response_messages = await demo_client.run(query)
     output_responses(response_messages)
 

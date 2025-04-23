@@ -75,12 +75,20 @@ def output_tools(tools: List[StructuredTool]):
     Args:
     tools (List[StructuredTool]): A list of tools where each tool is an instance of StructuredTool.
     """
+    # Clean up the file before writing
+    with open("/tmp/tools.txt", "w", encoding="utf-8") as f:
+        f.write("")
     for i, tool in enumerate(tools):
+        output_str = ""
         tool_name = tool.name
         tool_desc = tool.description
         tool_desc = [f"\t\t{line}" if line else "" for line in f"{tool_desc}".split('\n')]
         tool_desc = "\n".join(tool_desc)
         tool_args = tool.args_schema
+        output_str += f"Tool {i+1:d}:\n"
+        output_str += f"\tName: {tool_name}\n"
+        output_str += f"\tDescription:\n{tool_desc}\n"
+        output_str += f"\tArgs:\n"
         print(f"Tool {i+1:d}:")
         print(f"\tName: {tool_name}")
         print(f"\tDescription:\n{tool_desc}")
@@ -89,7 +97,12 @@ def output_tools(tools: List[StructuredTool]):
         required = tool_args.get("required", [])
         for prop, schema in properties.items():
             if prop in required:
+                output_str += f"\t\t{prop} (required): {schema}\n"
                 print(f"\t\t{prop} (required): {schema}")
             else:
+                output_str += f"\t\t{prop} (optional): {schema}\n"
                 print(f"\t\t{prop} (optional): {schema}")
+        output_str += "\n"
         print("\n")
+        with open("/tmp/tools.txt", "a", encoding="utf-8") as f:
+            f.write(output_str)
